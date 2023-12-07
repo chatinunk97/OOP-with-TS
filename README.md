@@ -147,3 +147,142 @@ user.save();
 
 User another class in another class
 it's not extends or Inherit
+
+# Serialize / Deserialize
+
+1. Serialize : Converting properties out an object and convert in to something else (JSON) then save it
+2. Deserialize : take th saved serialized data and put it back in to an object
+
+# Defining relationship between classes
+
+class Sync in module Sync is needing the method set and get
+which was originally in User what should we do ?
+
+1. We are using delegation , giving those methods to the class Sync
+   (a person sent or authorized to represent others, in particular an elected representative sent to a conference.)
+   Downside : Sync will now only work with class User (not general)
+
+2. Serialize interface => serialize():{} it gives more flexible to an argument of class Sync ; save(id:number , serialize : Serializable):void
+   This allow other class, not only User to pass in anything that satisfy Serializable which is quite handy
+   Downside : the type annotation for the output cannot be checked further than {}
+
+3. Turn class Sync into a generic class using <T>
+   allowing the caller to determine the type of the input
+
+# Refactor save and fetch
+
+Just a reminder about class
+normally class method is accessable after we do something like new Class(arg)
+then the argument taken in while creating the class can also be used to set some property in the Object
+
+```
+constructor(public baseUrl : string)
+```
+
+Which this property will be accessible cause it's public
+
+Now to the methods.
+After creating the object all methods (that are not restricted) can be accessable
+and also take in arg from outside like normal function
+
+Since the class Sync's fetch method does not have access to the method SET that's in class User
+we changed the purpose of fetch from fetching data then update the data to just fecthing and return the data
+
+```
+  fetch(id: number): void {
+    axios.get(`${this.rootUrl}/${id}`).then((response: AxiosResponse): void => {
+      this.set(response.data);
+    });
+  }
+```
+
+```
+ fetch(id: number): AxiosPromise {
+    return axios.get(`${this.rootUrl}/${id}`);
+  }
+```
+
+This also apply with save as well we are now just shooting request to backend
+without getting anything back => we don't know what happen
+
+```
+  save(data: UserProps): AxiosPromise {
+    const { id } = data;
+    if (id) {
+      return axios.put(`${this.rootUrl}/${id}`, data);
+    } else {
+      return axios.post("${this.rootUrl}", data);
+    }
+  }
+```
+
+- Side note : Generic Constraints : Tell TS the minimum requirement of <T>
+  We used <T> before but sometime it's too loose that we cannot
+  predict what property or method this T has
+
+- Another side note : Implements vs Extends
+  Implements : The value must follow the implements requiremennt
+  Extends : The value GETS the methods and properties
+
+  ```
+  interface HasId {
+  id: number;
+  }
+  export class Sync<T extends HasId>
+  ```
+
+  The reason we hard code Eventing but not for sync
+  is becaue Sync is more likely to be change
+  Now we are trying to sync data to API but we might, in the future, save the data to local
+
+# tsconfig.json
+
+```
+tsc --init
+```
+
+This will generate us a tsconfig.json file which it will auto enable
+the strict mode of ts
+Normally property that is marked as 'Optional' TS will assume ok it will always be defined
+BUT if we generate tsconfig.json file, the optional property will be either the defined type OR underfined , since it's optional
+
+The take for this is by just geenrating the tsconfig file behavior of optional properties will change
+
+we will come back to Sync again below
+
+# Refactor Attributes
+
+```
+ get(propName: string): string | number {
+    return this.data[propName];
+  }
+```
+
+looking back to get method
+the type annotation string | number may cause us problem
+the attributes of user someday may change to boolean or other stuff
+
+So can't we just put in string | number | boolean
+Well, yes this will work just fine BUT remember the type union
+when we try to use this value's method it will only shows us the option that is shared between these 3 types only
+
+OR ELSE , we must make a type gaurd like if(typeof value === "number) do that
+
+Which is kinna bad practice
+
+Solution
+
+_direct type annotation_ like below will not work
+because we already define the type as string | number | boolean
+
+```
+const id : number = attrs.get('id')
+```
+
+We can use _type asertion_ to overwrite what TS telss us
+
+```
+const id = attrs.get('id) as number
+```
+
+this will not apply if id is a string, it's kinna hard-coded
