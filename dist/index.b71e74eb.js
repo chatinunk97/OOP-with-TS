@@ -577,11 +577,11 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"h7u1C":[function(require,module,exports) {
 var _user = require("./models/User");
 const user = new (0, _user.User)({
-    id: 8,
     name: "new Kanon",
     age: 116
 });
-user.sync.fetch(1).then((response)=>console.log(response));
+//Reminder for how 'this' work in JS
+console.log(user.get("name"));
 
 },{"./models/User":"4rcHn"}],"4rcHn":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -589,15 +589,48 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "User", ()=>User);
 var _eventing = require("./Eventing");
 var _sync = require("./Sync");
+var _attributes = require("./Attributes");
 const rootUrl = "http://localhost:3000/users";
 class User {
-    constructor(){
+    constructor(attrs){
         this.events = new (0, _eventing.Eventing)();
         this.sync = new (0, _sync.Sync)(rootUrl);
+        this.attributes = new (0, _attributes.Attributes)(attrs);
+    }
+    get on() {
+        return this.events.on;
+    }
+    get trigger() {
+        return this.events.trigger;
+    }
+    get get() {
+        return this.attributes.get;
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Eventing":"7459s","./Sync":"QO3Gl"}],"gkKU3":[function(require,module,exports) {
+},{"./Eventing":"7459s","./Sync":"QO3Gl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Attributes":"6Bbds"}],"7459s":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Eventing", ()=>Eventing);
+class Eventing {
+    on(eventName, callback) {
+        const handlers = this.events[eventName] || [];
+        handlers.push(callback);
+        this.events[eventName] = handlers;
+    }
+    trigger(eventName) {
+        const handlers = this.events[eventName];
+        if (!handlers || !handlers.length) return;
+        handlers.forEach((callback)=>{
+            callback();
+        });
+    }
+    constructor(){
+        this.events = {};
+    }
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -627,29 +660,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"7459s":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "Eventing", ()=>Eventing);
-class Eventing {
-    on(eventName, callback) {
-        const handlers = this.events[eventName] || [];
-        handlers.push(callback);
-        this.events[eventName] = handlers;
-    }
-    trigger(eventName) {
-        const handlers = this.events[eventName];
-        if (!handlers || !handlers.length) return;
-        handlers.forEach((callback)=>{
-            callback();
-        });
-    }
-    constructor(){
-        this.events = {};
-    }
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"QO3Gl":[function(require,module,exports) {
+},{}],"QO3Gl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "Sync", ()=>Sync);
@@ -5030,6 +5041,22 @@ Object.entries(HttpStatusCode).forEach(([key, value])=>{
     HttpStatusCode[value] = key;
 });
 exports.default = HttpStatusCode;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6Bbds":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "Attributes", ()=>Attributes);
+class Attributes {
+    constructor(data){
+        this.data = data;
+        this.get = (propName)=>{
+            return this.data[propName];
+        };
+    }
+    set(update) {
+        this.data = Object.assign(this.data, update);
+    }
+}
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["gmPuC","h7u1C"], "h7u1C", "parcelRequire943d")
 

@@ -286,3 +286,116 @@ const id = attrs.get('id) as number
 ```
 
 this will not apply if id is a string, it's kinna hard-coded
+
+# Link Attributes to User Class
+
+```
+export class User {
+  public events: Eventing = new Eventing();
+  public sync: Sync<UserProps> = new Sync<UserProps>(rootUrl);
+  public attributes: Attributes<UserProps>;
+  constructor(attrs: UserProps) {
+    this.attributes = new Attributes<UserProps>(attrs);
+  }
+}
+```
+
+Now that the class Attributes needs an Obj to be parsed in to the class as an argument to create the attribute
+Before the User class does not have any input what so ever, so we need a constructor methods to take in the UserProps then assign it the new Attributes to the this.attribute
+
+# Now test , more about Delegation
+
+now that we have delegated most of the work to the children function when we going to use the methods or get to the property we would need something like
+
+```
+user.attributes.get('id')
+user.attributes.get('name')
+user.attributes.get('age')
+
+user.sync.save()
+user.sync.fetch()
+```
+
+Which is not that good cause the concelt od delegation is to
+move the methods or property to another class but the super class still has to have a way to 'call' those item as well
+By the above method we are just directly accessing the value which is not quite best practice
+
+# Back to getter again
+
+It's a method that allows you to get property from a class
+but the deal is you don't have to call it
+
+```
+class Person {
+  constructor(public name: string) {}
+
+  get userName(): string {
+    return this.name;
+  }
+}
+
+const boss = new Person("Boss")
+console.log(boss.userName)
+
+```
+
+Now we link the User to the Events's methods
+
+```
+  get on() {
+    return this.events.on;
+  }
+```
+
+In this getter we are not calling the "on" method in Event class
+but we are returning the reference of the method
+We can now assign this to a variable or just call it
+The arguments has to be the same tho
+
+```
+user.on('change',()=>{
+    console.log('User was changed !')
+})
+```
+
+The same thing as trigger
+
+```
+  get trigger() {
+    return this.events.trigger;
+  }
+```
+
+# 'this' keyword in JS
+
+```
+const colors = {
+  color: "red",
+  printColor() {
+    console.log(this.color);
+  },
+};
+
+colors.printColor();
+// This means what is on the left of the caller
+// which is colors => colors.color
+
+const printColor = colors.printColor;
+printColor(); // undefined
+//but for this example there's nother to the left of the caller
+// which makes this result in undefined
+
+//You can also see it this way, when we initialize the variable
+// It's equal to the method printColor inside colors however, the other property like 'color'
+// Does not come with it so it's like you just call a function that's referencing to nothing (nothing on the left)
+```
+
+Let's comeback to our User class
+We are using get so it will refer to the user
+as its 'this' and our user (class User) does not have a data property
+(what get method does is return this.data[propName];)
+which it will be translate in to user.data[propname] whichh it's already undefined on the user.data step
+
+```
+user.get('id')
+```

@@ -1,5 +1,7 @@
 import { User } from "./models/User";
 
-const user = new User({ id: 8, name: "new Kanon", age: 116 });
+const user = new User({ name: "new Kanon", age: 116 });
 
-user.sync.fetch(1).then((response) => console.log(response));
+//Reminder for how 'this' work in JS
+
+console.log(user.get('name'))
