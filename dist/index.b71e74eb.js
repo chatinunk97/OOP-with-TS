@@ -577,15 +577,15 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"h7u1C":[function(require,module,exports) {
 var _user = require("./models/User");
 const user = new (0, _user.User)({
-    name: "new Kanon",
-    age: 116
+    id: 8,
+    name: "New new Kanoan",
+    age: 26
 });
 //Reminder for how 'this' work in JS
-user.get("name");
-user.on("click", ()=>{
-    console.log("Clicked!");
+user.on("change", ()=>{
+    console.log(user);
 });
-user.trigger("click");
+user.save();
 
 },{"./models/User":"4rcHn"}],"4rcHn":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -609,6 +609,24 @@ class User {
     }
     get get() {
         return this.attributes.get;
+    }
+    set(update) {
+        this.attributes.set(update);
+        this.events.trigger("change");
+    }
+    fetch() {
+        const id = this.get("id");
+        if (typeof id !== "number") throw new Error("Cannot fetch data without an ID");
+        this.sync.fetch(id).then((response)=>{
+            this.set(response.data);
+        });
+    }
+    save() {
+        this.sync.save(this.attributes.getAll()).then((response)=>{
+            this.trigger("save");
+        }).catch(()=>{
+            this.trigger("error");
+        });
     }
 }
 
@@ -5053,12 +5071,15 @@ parcelHelpers.export(exports, "Attributes", ()=>Attributes);
 class Attributes {
     constructor(data){
         this.data = data;
-        this.get = (propName)=>{
-            return this.data[propName];
+        this.get = (key)=>{
+            return this.data[key];
         };
     }
     set(update) {
         this.data = Object.assign(this.data, update);
+    }
+    getAll() {
+        return this.data;
     }
 }
 
