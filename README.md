@@ -399,3 +399,98 @@ which it will be translate in to user.data[propname] whichh it's already undefin
 ```
 user.get('id')
 ```
+
+# Pass through function : Passing methods through classes
+
+Like said above the the instance of a class should not access
+its children method / property directly
+it would be like class.children.method which is kinna sus
+
+So we will bind the function to the children class in side the parent class
+
+We have Event and Attributes class so it would be something like this
+
+```
+  get on() {
+    return this.events.on;
+  }
+  get trigger() {
+    return this.events.trigger;
+  }
+  get get() {
+    return this.attributes.get;
+  }
+```
+
+notice that we ARE NOT calling the function it's just a reference
+bringing the function to this level only
+SOOOO the _this_ keyword would be referencing the one who will call this
+which is class User right ?
+
+```
+const user = new User({ name: "new Kanon", age: 116 });
+user.get("name");
+```
+
+Remember the _this_ keyword refers to the obj that calls it
+so this time it's user let's break this down
+
+```
+user.get("name");
+user. this.attributes.get ('name')
+//*this* is refering to the user class instance but let's go deeper
+
+this.attributes.get =  return this.data[propName]
+// we are now in the child class level , Attributes
+
+Let's summarize one time here
+now our method looks some thing like this
+
+user.this.attributes.get('name)
+user  <====== .this
+```
+
+The problem starts here !
+does the user class has property of 'attributes' ?
+NO ! and when you attempt to find a key in a undefined value => ERROR !!
+But why this refers to the user class instance ?
+It's becuase of regular function determine the value of 'this' on runtime based on who called it
+
+So since user is calling it this will be treated as user => Error
+
+What's the solution ?
+
+What we want is to have the keyword 'this' refer to the right attributes.data right ?
+And where is that ? It's in the attribute class
+
+```
+export class Attributes<T extends object> {
+  constructor(private data: T) {}
+}
+```
+
+Now it's time for arrow functions
+Arrow function uses Lexical Scope which mean the scope of which the instance was created
+So it will not take anything from outside nor change itself during runtime
+
+Back to "this"
+We will change out get function to an arrow function
+
+Now 'this' will attempt to get the whole Attributes as its value
+(well this is a keyword that refers to an object)
+
+So now even when we invoke attribute.get() from the user class level
+The instance of Attributes(which is created when we create user class) will always refer the insed "this" to the attributes itself not the user class
+
+```
+export class Attributes<T extends object> {
+  constructor(private data: T) {}
+
+  get = (propName: string): string | number => {
+    return this.data[propName];
+  };
+  set(update: T): void {
+    this.data = Object.assign(this.data, update);
+  }
+}
+```

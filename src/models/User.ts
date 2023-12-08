@@ -20,7 +20,7 @@ export class User {
   get trigger() {
     return this.events.trigger;
   }
-  get get(){
-    return this.attributes.get
+  get get() {
+    return this.attributes.get;
   }
 }
