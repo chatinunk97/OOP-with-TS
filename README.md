@@ -494,3 +494,20 @@ export class Attributes<T extends object> {
   }
 }
 ```
+
+# Moving all the attributes and methods to a model class
+We are now planning to move methods like get() set on
+to a difference class so the class User can be a very simple class that refers to other classes (composition)
+
+But here we will get the same problem we ran in to earlier
+We will be need to access everything through Model 
+OR
+if we decide to create a pass through function it would just force us to the previous state, the state the our class function is full of methods and properties
+
+Well, this is where inheritance comes into play
+We just inherit class Model in to class User
+This solves the problems
+1. class is still a clean and simple class
+2. We can access to the methods and properties like before
+
+We don't have to always use 'composition' sometime Inheritance is better
