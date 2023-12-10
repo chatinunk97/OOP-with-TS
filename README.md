@@ -562,7 +562,7 @@ new User(new Attributes() , new ApiSync...)
 This can be handy by adding new static class inside
 with different model inside 
 
-# Shorten Syntax and why Constructor initialize is good
+# Shorten Syntax and why Constructor shorthand is good
 
 now we are refactoring the Model class's method to be shorter 
 ```
