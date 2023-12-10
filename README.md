@@ -577,4 +577,41 @@ It's because of the class Constructor
 
 Let's look at this simple example
 ![Alt text](https://github.com/chatinunk97/frameworkWithTS/blob/main/src/screenshot/ts_class01.png)
+
+We have 2 classes Engine and Car
+Car will take in an instance of class Engine to create an instance of class Car
+
+Now let's look at the startCar method in class Car
+it's taking the instance of engine (which is the input for creating the instance of car) and assign it to a property name startCar
+
+It seems OK right ? but the problem is on the right
+When it's been translated in to JS
+It's looks something like this
 ```
+this.startCar = this.engine.on
+this.engine = engine
+```
+We are trying to access this.engine before it's even being initialize
+This is (I assume) because the class constructor must wait for the class to be called like 
+```
+new Car (new Engine("honda"))
+```
+but other method/property in the class has already been created before the contructor function activates. That's why the startCar is on the top of class constructor
+
+The order is this
+according to this Stackoverflow answer 
+https://stackoverflow.com/questions/53706621/typescript-class-properties-initialization-order
+```
+   1. Constructor field shorthand
+   2. Property initializers
+   3. Constructor body.
+
+```
+Soo after we changed it to 
+constructor shorthand it will work like this
+```
+//This is constructor shorthand
+constructor( private something : string){}
+```
+![Alt text](https://github.com/chatinunk97/frameworkWithTS/blob/main/src/screenshot/ts_class02.png)
+
