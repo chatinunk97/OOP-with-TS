@@ -1,11 +1,11 @@
 import { User } from "./models/User";
 
-const user = new User({ id: 8, name: "New new Kanoan", age: 26 });
+const user = User.buildUser({id : 1})
 
-//Reminder for how 'this' work in JS
+user.on('change' , ()=>{
+  console.log(user)
+})
 
-user.on("change", () => {
-  console.log(user);
-});
+user.fetch()
 
-user.save();
+console.log(user.isAdminUser())

@@ -511,3 +511,69 @@ This solves the problems
 2. We can access to the methods and properties like before
 
 We don't have to always use 'composition' sometime Inheritance is better
+
+
+# Reafactor : Creating Model Class
+
+- Just a reminder 
+this is Type alias
+```
+type Callback = () => void;
+```
+this is changing something to a generic
+by putting in <T> which is a uncertain type that will be determine at runtime
+
+The bulding of class Model
+This is where we create Interface to make it easier to swap out these class out of User class
+```
+interface ModelAttributes<T> {
+  set(update: T): void;
+  getAll(): T;
+  get<K extends keyof T>(key: K): T[K];
+}
+
+interface Sync<T> {
+  fetch(id: number): AxiosPromise;
+  save(data: T): AxiosPromise;
+}
+
+interface Events {
+  on(eventName: string, callback: () => void);
+  trigger(eventName: string): void;
+}
+```
+
+Static class 
+This can be use to initialize the class with out having to use new keyword
+```
+  static buildUser(attrs: UserProps): User {
+    return new User(
+      new Attributes<UserProps>(attrs),
+      new Eventing(),
+      new ApiSync<UserProps>(rootUrl)
+    );
+  }
+```
+We can call User.buildUser() 
+This will be easier since we've already pre-configured the Model (sub class) inside already so we don't have to do something like
+
+new User(new Attributes() , new ApiSync...)
+
+This can be handy by adding new static class inside
+with different model inside 
+
+# Shorten Syntax and why Constructor initialize is good
+
+now we are refactoring the Model class's method to be shorter 
+```
+  on = this.events.on;
+
+  trigger = this.events.trigger;
+
+  get = this.attributes.get;
+```
+But why didn't we do this in the first place ?
+It's because of the class Constructor
+
+Let's look
+```
