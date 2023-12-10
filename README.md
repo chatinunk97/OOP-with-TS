@@ -575,5 +575,6 @@ now we are refactoring the Model class's method to be shorter
 But why didn't we do this in the first place ?
 It's because of the class Constructor
 
-Let's look
+Let's look at this simple example
+![Alt text](https://github.com/chatinunk97/frameworkWithTS/blob/main/src/screenshot/ts_class01.png)
 ```
