@@ -496,35 +496,39 @@ export class Attributes<T extends object> {
 ```
 
 # Moving all the attributes and methods to a model class
+
 We are now planning to move methods like get() set on
 to a difference class so the class User can be a very simple class that refers to other classes (composition)
 
 But here we will get the same problem we ran in to earlier
-We will be need to access everything through Model 
+We will be need to access everything through Model
 OR
 if we decide to create a pass through function it would just force us to the previous state, the state the our class function is full of methods and properties
 
 Well, this is where inheritance comes into play
 We just inherit class Model in to class User
 This solves the problems
+
 1. class is still a clean and simple class
 2. We can access to the methods and properties like before
 
 We don't have to always use 'composition' sometime Inheritance is better
 
-
 # Reafactor : Creating Model Class
 
-- Just a reminder 
-this is Type alias
+- Just a reminder
+  this is Type alias
+
 ```
 type Callback = () => void;
 ```
+
 this is changing something to a generic
 by putting in <T> which is a uncertain type that will be determine at runtime
 
 The bulding of class Model
 This is where we create Interface to make it easier to swap out these class out of User class
+
 ```
 interface ModelAttributes<T> {
   set(update: T): void;
@@ -543,8 +547,9 @@ interface Events {
 }
 ```
 
-Static class 
+Static class
 This can be use to initialize the class with out having to use new keyword
+
 ```
   static buildUser(attrs: UserProps): User {
     return new User(
@@ -554,17 +559,19 @@ This can be use to initialize the class with out having to use new keyword
     );
   }
 ```
-We can call User.buildUser() 
+
+We can call User.buildUser()
 This will be easier since we've already pre-configured the Model (sub class) inside already so we don't have to do something like
 
 new User(new Attributes() , new ApiSync...)
 
 This can be handy by adding new static class inside
-with different model inside 
+with different model inside
 
 # Shorten Syntax and why Constructor shorthand is good
 
-now we are refactoring the Model class's method to be shorter 
+now we are refactoring the Model class's method to be shorter
+
 ```
   on = this.events.on;
 
@@ -572,6 +579,7 @@ now we are refactoring the Model class's method to be shorter
 
   get = this.attributes.get;
 ```
+
 But why didn't we do this in the first place ?
 It's because of the class Constructor
 
@@ -587,31 +595,179 @@ it's taking the instance of engine (which is the input for creating the instance
 It seems OK right ? but the problem is on the right
 When it's been translated in to JS
 It's looks something like this
+
 ```
 this.startCar = this.engine.on
 this.engine = engine
 ```
+
 We are trying to access this.engine before it's even being initialize
-This is (I assume) because the class constructor must wait for the class to be called like 
+This is (I assume) because the class constructor must wait for the class to be called like
+
 ```
 new Car (new Engine("honda"))
 ```
+
 but other method/property in the class has already been created before the contructor function activates. That's why the startCar is on the top of class constructor
 
 The order is this
-according to this Stackoverflow answer 
+according to this Stackoverflow answer
 https://stackoverflow.com/questions/53706621/typescript-class-properties-initialization-order
+
 ```
    1. Constructor field shorthand
    2. Property initializers
    3. Constructor body.
 
 ```
-Soo after we changed it to 
+
+Soo after we changed it to
 constructor shorthand it will work like this
+
 ```
 //This is constructor shorthand
 constructor( private something : string){}
 ```
+
 ![Alt text](https://github.com/chatinunk97/frameworkWithTS/blob/main/src/screenshot/ts_class02.png)
 
+# Back to Static Methods again
+
+What we've been doing so far is to like
+make it easier to create an instance of something
+Not have to do new Class () everytime
+
+This is where Static Methods comes in to play
+You can pre-define a method that create an instance of something
+Heck , you can even create a instance of other class like this
+\*This is in User Class
+Since the class Collection is a generic class that uses the interface User , UserProps
+keeping it in User class will be easier to reference to those Interfaces
+
+```
+  static buildUserCollection(): Collection<User, UserProps> {
+    return new Collection<User, UserProps>(
+      "http://localhost:3000/users",
+      (json: UserProps) => User.buildUser(json)
+    );
+  }
+```
+
+# templateElement vs Document Fragment
+
+This is back to OG before having React's event listener or Function component
+
+1. Template Elment is like an element of a website that is created BEFORE
+   being plugged into the HTML
+
+- Normally we create an HTML directly in html file but if we want to use JS (TS in this case) to change or manipulate the DOM we must create an Element THEN plugged it into the DOM
+- We plugged stuff into the DOM by referencing the tags
+
+```
+export class UserForm {
+constructor(public parent: Element | null) {}
+.
+.
+.
+.
+  render(): void {
+  const templateElement = document.createElement("template");
+  templateElement.innerHTML = this.template();
+  this.bindEvents(templateElement.content);
+  if (this.parent) {
+    this.parent.append(templateElement.content);
+  }
+}
+```
+
+- In this case we use take in an Element which is the HTML element that we want to plugged our templateElement into
+- on the last line we 'append' the templateElement's content into the parent
+- meaning we are taking all of the templateElement stuff put into where the parent element is Now we successfully manipulate the DOM by using TS
+
+# Adding event the OG way
+
+```
+ element.addEventListener(eventName, eventsMap[eventKey]);
+```
+
+we use the normal addEventListener to the DOM's element
+but in the UserForms class it looks kinna complicated because of we want to make it some sort of reuseable
+
+# Composition vs Inheritance
+
+When there needs to be a relation between 2 classes
+class A needs something in class B
+and class B needs something in class A
+
+If it's this kind of situation (2 ways relation) most of the time Inheritance would be bettwer than Composition
+
+Some problem may still presist, the sub class may be referencing other method/property in the higher class (the class that extends this sub class)
+We can use Abstract Class
+It's the way of promissing the class that there will be some data in
+the future eventho in its own class there's no data for that
+
+```
+ abstract eventsMap(): { [key: string]: () => void };
+  abstract template(): string;
+```
+
+# Extend to Extend to Extend !!
+
+```
+// View Class
+export abstract class View<T extends Model<K>, K extends HasId>
+```
+
+```
+// UserForm Class
+export class UserForm extends View<User, UserProps>
+```
+
+Now what the hec is happening ?
+
+1. The UserForm class is extending from View Class
+2. But we can't just simply put it UserForm extends View because the View class itself also a 'Generic Class' meaning we need to tell the class which type parameter we are using
+3. So the really first thing to to is to tell View class first
+
+BUTTT View class also extends Model !
+
+```
+// Model Class
+export class Model<T extends HasId>
+```
+
+4. So we are having 3 layers now
+
+UserForm ===> View ==> Model ==> HasId
+Which all of them are Generic class neding type parameter
+
+5. So inorder to fullfill every type parameter we have to do as above
+
+```
+// Model Class
+interface HasId {...}
+export class Model<T extends HasId>
+
+// View Class
+export abstract class View<T extends Model<K>, K extends HasId>
+
+
+// UserForm Class
+export class UserForm extends View<User, UserProps>
+```
+
+# Abstract class
+
+Again, this is to ensure TS that the children that is extending from this class will have this method/property inside so please let us reference to that
+
+But sometime if we don't want to use Abstract class
+in a situation like , not all children that is extending from this class will have that method/property you can just create a method like this
+
+```
+ eventsMap(): { [key: string]: () => void } {
+    return {};
+  }
+```
+
+So the method does exist but you can overwrite it anytime
+this is one concept of OOP : Runtime polymorphism

@@ -12,10 +12,10 @@ interface Sync<T> {
 }
 
 interface Events {
-  on(eventName: string, callback: () => void);
+  on(eventName: string, callback: () => void): void;
   trigger(eventName: string): void;
 }
-interface HasId {
+export interface HasId {
   id?: number;
 }
 export class Model<T extends HasId> {
