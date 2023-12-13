@@ -771,3 +771,20 @@ in a situation like , not all children that is extending from this class will ha
 
 So the method does exist but you can overwrite it anytime
 this is one concept of OOP : Runtime polymorphism
+
+# Back to something basic about TS
+
+the command to compile typescript is via tsc (typescript compiler)
+
+```
+tsc index.ts
+```
+
+Note that everything is linked to the index.ts (a dependencies of the file)
+Typescript is smart enough that it will compile all of the other file that are linked to this file automatically !
+
+
+```
+    "start:parcel": "npx parcel index.html",
+```
+parcel does the compiling the typescript then run a dev server for the file
